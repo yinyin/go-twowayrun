@@ -1,6 +1,7 @@
 package runtwoway
 
+// TwoWayRunner defines required methods for a two-way runner.
 type TwoWayRunner interface {
-	RunForward() (success bool)
-	RunBackward() (success bool)
+	RunForward() (err error)
+	RunBackward() (err error)
 }
