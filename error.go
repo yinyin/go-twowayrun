@@ -8,13 +8,23 @@ import "fmt"
 type TwoWayRunError struct {
 	PrevError error
 	StopIndex int
+	NextError *TwoWayRunError
 }
 
 func newTwoWayRunError(prevError error, stopIndex int) (e *TwoWayRunError) {
 	return &TwoWayRunError{
 		PrevError: prevError,
 		StopIndex: stopIndex,
+		NextError: nil,
 	}
+}
+
+func newTwoWayRunErrorWithExistedError(existedError *TwoWayRunError, prevError error, stopIndex int) (e *TwoWayRunError) {
+	e = newTwoWayRunError(prevError, stopIndex)
+	if nil != existedError {
+		existedError.NextError = e
+	}
+	return e
 }
 
 func (e *TwoWayRunError) Error() string {
