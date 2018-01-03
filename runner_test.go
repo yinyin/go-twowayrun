@@ -1,6 +1,7 @@
 package runtwoway
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -102,4 +103,25 @@ func TestTwoWayRunners_Run_e0(t *testing.T) {
 		t.Errorf("Expect fully success")
 	}
 	checkMockRunners1ForwardRunned(m1x, t, 4)
+}
+
+func TestTwoWayRunners_Run_e1(t *testing.T) {
+	m1x := newMockRunners1(5)
+	mockErr := fmt.Errorf("mock error")
+	m1x[2].(*mockRunner1).errOfForward = mockErr
+	err := m1x.Run()
+	if nil == err {
+		t.Errorf("unexpected fully success")
+	}
+	errInst, ok := err.(*TwoWayRunError)
+	if !ok {
+		t.Errorf("expecting error type as TwoWayRunError: %v", err)
+	}
+	if mockErr != errInst.PrevError {
+		t.Errorf("unexpected mock error instance: %v", errInst)
+	}
+	if 2 != errInst.StopIndex {
+		t.Errorf("unexpected stop index: %v", errInst)
+	}
+	checkMockRunners1BothRunned(m1x, t, 2)
 }
