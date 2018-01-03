@@ -42,3 +42,19 @@ func (r TwoWayRunners) Run() (err error) {
 	}
 	return newTwoWayRunError(prevError, stoppedAt)
 }
+
+// RunForward runs forward runners only.
+func (r TwoWayRunners) RunForward(stopOnError bool) (err error) {
+	var errInst *TwoWayRunError
+	for idx, runner := range r {
+		e := runner.RunForward()
+		if nil != e {
+			errInst = newTwoWayRunErrorWithExistedError(errInst, e, idx)
+			log.Printf("TwoWayRunners.RunForward: failed: (index=%d, error=%v)", idx, e)
+			if stopOnError {
+				break
+			}
+		}
+	}
+	return errInst
+}
