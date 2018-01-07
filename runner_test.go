@@ -96,6 +96,41 @@ func checkMockRunners1BackwardRunned(runners TwoWayRunners, t *testing.T, toIdx 
 	}
 }
 
+func castToTwoWayRunErrors(t *testing.T, err error) (errInst *TwoWayRunErrors) {
+	errInst, ok := err.(*TwoWayRunErrors)
+	if !ok {
+		t.Errorf("expecting TwoWayRunErrors: %#v", err)
+		return nil
+	}
+	return errInst
+}
+
+func checkTwoWayRunError(t *testing.T, err error, expRunnerError error, expStopIndex int) {
+	errInst, ok := err.(*TwoWayRunError)
+	if !ok {
+		t.Errorf("expecting error type as TwoWayRunError: %v", err)
+		return
+	}
+	if expRunnerError != errInst.RunnerError {
+		t.Errorf("unexpected error instance: %v", errInst)
+	}
+	if expStopIndex != errInst.StopIndex {
+		t.Errorf("unexpected stop index: %v", errInst)
+	}
+}
+
+func checkTwoWayRunErrorsElement(t *testing.T, err *TwoWayRunErrors, errIndex int, expRunnerError error, expStopIndex int) {
+	if nil == err {
+		return
+	}
+	if len(err.RunErrors) <= errIndex {
+		t.Errorf("length of RunErrors not that much: %d <= %d", len(err.RunErrors), errIndex)
+		return
+	}
+	e := err.RunErrors[errIndex]
+	checkTwoWayRunError(t, e, expRunnerError, expStopIndex)
+}
+
 func TestTwoWayRunners_Run_e0(t *testing.T) {
 	m1x := newMockRunners1(5)
 	err := m1x.Run()
@@ -113,16 +148,7 @@ func TestTwoWayRunners_Run_e1(t *testing.T) {
 	if nil == err {
 		t.Errorf("unexpected fully success")
 	}
-	errInst, ok := err.(*TwoWayRunError)
-	if !ok {
-		t.Errorf("expecting error type as TwoWayRunError: %v", err)
-	}
-	if mockErr != errInst.RunnerError {
-		t.Errorf("unexpected mock error instance: %v", errInst)
-	}
-	if 2 != errInst.StopIndex {
-		t.Errorf("unexpected stop index: %v", errInst)
-	}
+	checkTwoWayRunError(t, err, mockErr, 2)
 	checkMockRunners1BothRunned(m1x, t, 2)
 }
 
@@ -133,4 +159,20 @@ func TestTwoWayRunners_RunForward_e0(t *testing.T) {
 		t.Errorf("expecting fully success: %#v", err)
 	}
 	checkMockRunners1ForwardRunned(m1x, t, 4)
+}
+
+func TestTwoWayRunners_RunForward_e1(t *testing.T) {
+	m1x := newMockRunners1(5)
+	mockErr1 := fmt.Errorf("mock error 1")
+	m1x[2].(*mockRunner1).errOfForward = mockErr1
+	mockErr2 := fmt.Errorf("mock error 2")
+	m1x[4].(*mockRunner1).errOfForward = mockErr2
+	err := m1x.RunForward(false)
+	if nil == err {
+		t.Errorf("expecting some errors: %#v", err)
+	}
+	checkMockRunners1ForwardRunned(m1x, t, 4)
+	errInst := castToTwoWayRunErrors(t, err)
+	checkTwoWayRunErrorsElement(t, errInst, 0, mockErr1, 2)
+	checkTwoWayRunErrorsElement(t, errInst, 1, mockErr2, 4)
 }
