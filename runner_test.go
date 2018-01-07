@@ -117,7 +117,7 @@ func TestTwoWayRunners_Run_e1(t *testing.T) {
 	if !ok {
 		t.Errorf("expecting error type as TwoWayRunError: %v", err)
 	}
-	if mockErr != errInst.PrevError {
+	if mockErr != errInst.RunnerError {
 		t.Errorf("unexpected mock error instance: %v", errInst)
 	}
 	if 2 != errInst.StopIndex {

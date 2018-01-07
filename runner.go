@@ -44,12 +44,14 @@ func (r TwoWayRunners) Run() (err error) {
 }
 
 // RunForward runs forward runners only.
+// Will stop on runner which result into error if stopOnError is set to true.
+// If any error occurs the resulted error will be TwoWayRunErrors structure.
 func (r TwoWayRunners) RunForward(stopOnError bool) (err error) {
-	var errInst *TwoWayRunError
+	var errInst *TwoWayRunErrors
 	for idx, runner := range r {
 		e := runner.RunForward()
 		if nil != e {
-			errInst = newTwoWayRunErrorWithExistedError(errInst, e, idx)
+			errInst.appendRunnerError(e, idx)
 			log.Printf("TwoWayRunners.RunForward: failed: (index=%d, error=%v)", idx, e)
 			if stopOnError {
 				break
