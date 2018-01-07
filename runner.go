@@ -47,7 +47,7 @@ func (r TwoWayRunners) Run() (err error) {
 // Will stop on runner which result into error if stopOnError is set to true.
 // If any error occurs the resulted error will be TwoWayRunErrors structure.
 func (r TwoWayRunners) RunForward(stopOnError bool) (err error) {
-	var errInst *TwoWayRunErrors
+	errInst := newTwoWayRunErrors()
 	for idx, runner := range r {
 		e := runner.RunForward()
 		if nil != e {
