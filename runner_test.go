@@ -96,11 +96,14 @@ func checkMockRunners1BackwardRunned(runners TwoWayRunners, t *testing.T, toIdx 
 	}
 }
 
-func castToTwoWayRunErrors(t *testing.T, err error) (errInst *TwoWayRunErrors) {
+func castToTwoWayRunErrors(t *testing.T, err error, expErrorCount int) (errInst *TwoWayRunErrors) {
 	errInst, ok := err.(*TwoWayRunErrors)
 	if !ok {
 		t.Errorf("expecting TwoWayRunErrors: %#v", err)
 		return nil
+	}
+	if expErrorCount != len(errInst.RunErrors) {
+		t.Errorf("expecting %d errors in TwoWayRunErrors but got %d", expErrorCount, len(errInst.RunErrors))
 	}
 	return errInst
 }
@@ -172,7 +175,7 @@ func TestTwoWayRunners_RunForward_e1(t *testing.T) {
 		t.Errorf("expecting some errors: %#v", err)
 	}
 	checkMockRunners1ForwardRunned(m1x, t, 4)
-	errInst := castToTwoWayRunErrors(t, err)
+	errInst := castToTwoWayRunErrors(t, err, 2)
 	checkTwoWayRunErrorsElement(t, errInst, 0, mockErr1, 2)
 	checkTwoWayRunErrorsElement(t, errInst, 1, mockErr2, 4)
 }
