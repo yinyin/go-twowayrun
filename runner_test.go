@@ -130,7 +130,7 @@ func TestTwoWayRunners_RunForward_e0(t *testing.T) {
 	m1x := newMockRunners1(5)
 	err := m1x.RunForward(false)
 	if nil != err {
-		t.Errorf("expecting fully success: %v", err)
+		t.Errorf("expecting fully success: %#v", err)
 	}
 	checkMockRunners1ForwardRunned(m1x, t, 4)
 }
