@@ -1,4 +1,4 @@
-package runtwoway
+package twowayrun
 
 // TwoWayRunner defines required methods for a two-way runner.
 type TwoWayRunner interface {

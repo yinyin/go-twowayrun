@@ -1,4 +1,4 @@
-package runtwoway
+package twowayrun
 
 import (
 	"fmt"
