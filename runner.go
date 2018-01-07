@@ -56,8 +56,5 @@ func (r TwoWayRunners) RunForward(stopOnError bool) (err error) {
 			}
 		}
 	}
-	if nil == errInst {
-		return nil
-	}
-	return errInst
+	return errInst.toError()
 }

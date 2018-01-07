@@ -27,6 +27,13 @@ func newTwoWayRunErrorWithExistedError(existedError *TwoWayRunError, prevError e
 	return e
 }
 
+func (e *TwoWayRunError) toError() error {
+	if nil == e {
+		return nil
+	}
+	return e
+}
+
 func (e *TwoWayRunError) Error() string {
 	return fmt.Sprintf("TwoWayRunError(PrevError: %s, StopIndex: %d)", e.PrevError.Error(), e.StopIndex)
 }
