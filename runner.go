@@ -60,3 +60,22 @@ func (r TwoWayRunners) RunForward(stopOnError bool) (err error) {
 	}
 	return errInst.toError()
 }
+
+// RunBackward runs backward runners only. Runners will be activate in reverse order.
+// Will stop on runner which result into error if stopOnError is set to true.
+// If any error occurs the resulted error will be TwoWayRunErrors structure.
+func (r TwoWayRunners) RunBackward(stopOnError bool) (err error) {
+	errInst := newTwoWayRunErrors()
+	for idx := len(r) - 1; idx >= 0; idx-- {
+		runner := r[idx]
+		e := runner.RunBackward()
+		if nil != e {
+			errInst.appendRunnerError(e, idx)
+			log.Printf("TwoWayRunners.RunBackward: failed: (index=%d, error=%v)", idx, e)
+			if stopOnError {
+				break
+			}
+		}
+	}
+	return errInst.toError()
+}
