@@ -1,6 +1,7 @@
 package twowayrun
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -21,12 +22,12 @@ func newMockRunner1(errOfForward, errOfBackward error) (r *mockRunner1) {
 	}
 }
 
-func (r *mockRunner1) RunForward() (err error) {
+func (r *mockRunner1) RunForward(ctx context.Context) (err error) {
 	r.countForward++
 	return r.errOfForward
 }
 
-func (r *mockRunner1) RunBackward() (err error) {
+func (r *mockRunner1) RunBackward(ctx context.Context) (err error) {
 	r.countBackward++
 	return r.errOfBackward
 }
@@ -134,27 +135,30 @@ func checkTwoWayRunErrorsElement(t *testing.T, err *TwoWayRunErrors, errIndex in
 	checkTwoWayRunError(t, e, expRunnerError, expStopIndex)
 }
 
-func prepareSetupE1() (m1x TwoWayRunners, mockErr1, mockErr2 error) {
+func prepareSetupE1() (ctx context.Context, m1x TwoWayRunners, mockErr1, mockErr2 error) {
+	ctx = context.Background()
 	m1x = newMockRunners1(5)
 	mockErr1 = fmt.Errorf("mock error 1")
 	m1x[2].(*mockRunner1).errOfForward = mockErr1
 	mockErr2 = fmt.Errorf("mock error 2")
 	m1x[4].(*mockRunner1).errOfForward = mockErr2
-	return m1x, mockErr1, mockErr2
+	return ctx, m1x, mockErr1, mockErr2
 }
 
-func prepareSetupE2() (m1x TwoWayRunners, mockErr1, mockErr2 error) {
+func prepareSetupE2() (ctx context.Context, m1x TwoWayRunners, mockErr1, mockErr2 error) {
+	ctx = context.Background()
 	m1x = newMockRunners1(5)
 	mockErr1 = fmt.Errorf("mock error 1")
 	m1x[2].(*mockRunner1).errOfBackward = mockErr1
 	mockErr2 = fmt.Errorf("mock error 2")
 	m1x[4].(*mockRunner1).errOfBackward = mockErr2
-	return m1x, mockErr1, mockErr2
+	return ctx, m1x, mockErr1, mockErr2
 }
 
 func TestTwoWayRunners_Run_e0(t *testing.T) {
+	ctx := context.Background()
 	m1x := newMockRunners1(5)
-	err := m1x.Run()
+	err := m1x.Run(ctx)
 	if nil != err {
 		t.Errorf("expecting fully success: %v", err)
 	}
@@ -162,10 +166,11 @@ func TestTwoWayRunners_Run_e0(t *testing.T) {
 }
 
 func TestTwoWayRunners_Run_e1(t *testing.T) {
+	ctx := context.Background()
 	m1x := newMockRunners1(5)
 	mockErr := fmt.Errorf("mock error")
 	m1x[2].(*mockRunner1).errOfForward = mockErr
-	err := m1x.Run()
+	err := m1x.Run(ctx)
 	if nil == err {
 		t.Errorf("unexpected fully success")
 	}
@@ -174,8 +179,9 @@ func TestTwoWayRunners_Run_e1(t *testing.T) {
 }
 
 func TestTwoWayRunners_RunForward_e0(t *testing.T) {
+	ctx := context.Background()
 	m1x := newMockRunners1(5)
-	err := m1x.RunForward(false)
+	err := m1x.RunForward(ctx, false)
 	if nil != err {
 		t.Errorf("expecting fully success: %#v", err)
 	}
@@ -183,8 +189,8 @@ func TestTwoWayRunners_RunForward_e0(t *testing.T) {
 }
 
 func TestTwoWayRunners_RunForward_e1a(t *testing.T) {
-	m1x, mockErr1, mockErr2 := prepareSetupE1()
-	err := m1x.RunForward(false)
+	ctx, m1x, mockErr1, mockErr2 := prepareSetupE1()
+	err := m1x.RunForward(ctx, false)
 	if nil == err {
 		t.Errorf("expecting some errors: %#v", err)
 	}
@@ -195,8 +201,8 @@ func TestTwoWayRunners_RunForward_e1a(t *testing.T) {
 }
 
 func TestTwoWayRunners_RunForward_e1b(t *testing.T) {
-	m1x, mockErr1, _ := prepareSetupE1()
-	err := m1x.RunForward(true)
+	ctx, m1x, mockErr1, _ := prepareSetupE1()
+	err := m1x.RunForward(ctx, true)
 	if nil == err {
 		t.Errorf("expecting some errors: %#v", err)
 	}
@@ -206,8 +212,9 @@ func TestTwoWayRunners_RunForward_e1b(t *testing.T) {
 }
 
 func TestTwoWayRunners_RunBackward_e0(t *testing.T) {
+	ctx := context.Background()
 	m1x := newMockRunners1(5)
-	err := m1x.RunBackward(false)
+	err := m1x.RunBackward(ctx, false)
 	if nil != err {
 		t.Errorf("expecting fully success: %#v", err)
 	}
@@ -215,8 +222,8 @@ func TestTwoWayRunners_RunBackward_e0(t *testing.T) {
 }
 
 func TestTwoWayRunners_RunBackward_e2a(t *testing.T) {
-	m1x, mockErr1, mockErr2 := prepareSetupE2()
-	err := m1x.RunBackward(false)
+	ctx, m1x, mockErr1, mockErr2 := prepareSetupE2()
+	err := m1x.RunBackward(ctx, false)
 	if nil == err {
 		t.Errorf("expecting some errors: %#v", err)
 	}
@@ -227,8 +234,8 @@ func TestTwoWayRunners_RunBackward_e2a(t *testing.T) {
 }
 
 func TestTwoWayRunners_RunBackward_e2b(t *testing.T) {
-	m1x, _, mockErr2 := prepareSetupE2()
-	err := m1x.RunBackward(true)
+	ctx, m1x, _, mockErr2 := prepareSetupE2()
+	err := m1x.RunBackward(ctx, true)
 	if nil == err {
 		t.Errorf("expecting some errors: %#v", err)
 	}
